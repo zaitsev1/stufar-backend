@@ -21,5 +21,6 @@ import { loggingMiddleware } from '@common/middleware/prisma-logging.middleware'
   ],
   controllers: [],
   providers: [],
+  exports: [ConfigService],
 })
 export class AppModule {}

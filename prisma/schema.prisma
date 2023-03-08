@@ -8,12 +8,141 @@ datasource db {
 }
 
 model User {
-  id         String    @id @unique
-  name       String
+  id             Int        @id @default(autoincrement())
+  status         UserStatus @default(ACTIVE)
+  role           UserRole   @default(USER)
+  name           String
+  password       String
+  email          String     @unique
   // 
-  meta       Json?
+  user_group     UserGroup? @relation(fields: [user_group_id], references: [id])
+  user_group_id  Int?
   //
+  email_verified DateTime?
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+}
+
+model UserGroup {
+  id         Int      @id @default(autoincrement())
+  group_id   String   @unique
+  // 
+  users      User[]
+  client     Client   @relation(fields: [client_id], references: [id])
+  client_id  Int
+  // 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Client {
+  id                         Int                            @id @default(autoincrement())
+  client_id                  String                         @unique
+  name                       String?
+  // 
+  avivaibility_duration_days ClinetAvailabilityDurationDays @default(MONTH)
+  expiration_date            DateTime
+  bucket                     String
+  // 
+  user_groups                UserGroup[]
+  locations                  Location[]
+  // 
+  created_at                 DateTime                       @default(now())
+  updated_at                 DateTime                       @updatedAt
+}
+
+model Video {
+  id         Int                    @id @default(autoincrement())
+  video_id   String                 @unique
+  status     VideoStatus            @default(REVIEWING)
+  category   VideoCategoryDetection @default(DETECTION)
+  name       String
+  date       DateTime
+  url        String
+  // 
+  camera     Camera                 @relation(fields: [camera_id], references: [id])
+  camera_id  Int
+  // 
   deleted_at DateTime?
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime               @default(now())
+  updated_at DateTime               @updatedAt
+}
+
+model Camera {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+  description   String?
+  //
+  videos        Video[]
+  cameraGroupId String?
+  //
+  location      Location? @relation(fields: [location_id], references: [id])
+  location_id   Int?
+  //
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model Location {
+  id         Int      @id @default(autoincrement())
+  address    String   @unique
+  latitude   Float
+  longitude  Float
+  // 
+  cameras    Camera[]
+  client     Client?  @relation(fields: [client_id], references: [id])
+  client_id  Int?
+  //
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Logging {
+  id         Int          @id @default(autoincrement())
+  message    String
+  date       DateTime
+  level      LoggingLevel
+  meta       Json?
+  // 
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+}
+
+enum VideoCategoryDetection {
+  DETECTION
+  DEPOSIT
+  DEPOSIT_WITHOUT_FOLLOW_UP
+  OTHER
+}
+
+enum VideoStatus {
+  PUBLISHED
+  REVIEWING
+  CANCELED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserRole {
+  SUPER
+  ADMIN
+  MODERATOR
+  SALER
+  CLIENT
+  USER
+}
+
+enum ClinetAvailabilityDurationDays {
+  SEVEN
+  FOURTEEN
+  MONTH
+}
+
+enum LoggingLevel {
+  INFO
+  WARN
+  ERROR
 }
